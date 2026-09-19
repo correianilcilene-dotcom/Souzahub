@@ -1,0 +1,157 @@
+-- SOUZA HUB 🥚🚀💎
+-- Preto + Azul Cristal Brilhante
+-- Pegar Ovo + Teleporte Manual | Velocidade 400
+-- Delta Executor ✅
+
+print("======================================")
+print("       SOUZA HUB  🥚🚀💎")
+print("  Preto & Azul Cristal Brilhante")
+print("======================================")
+
+-- ========== CONFIGURAÇÕES ==========
+getgenv().Config = {
+    Velocidade = 400,
+    AlturaAcimaBicho = 20,
+    DistanciaPegarOvo = 15,
+    PontoSeguro = Vector3.new(0, 5, -60)
+}
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+-- ========== SALVAR PONTO SEGURO (TECLA P) ==========
+game:GetService("UserInputService").InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.P then
+        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+            getgenv().Config.PontoSeguro = Player.Character.HumanoidRootPart.Position
+            print("✅ PONTO SALVO! Atrás da linha!")
+        end
+    end
+end)
+
+-- ========== CORES — PRETO + AZUL CRISTAL BRILHANTE ==========
+local CORES = {
+    FundoPreto = Color3.fromRGB(10, 12, 18),
+    AzulCristal = Color3.fromRGB(0, 200, 255),
+    AzulBrilhante = Color3.fromRGB(80, 220, 255),
+    Branco = Color3.fromRGB(255, 255, 255),
+    Sucesso = Color3.fromRGB(0, 255, 150)
+}
+
+-- ========== TELA ==========
+local Tela = Instance.new("ScreenGui")
+Tela.Name = "SouzaHubCristal"
+Tela.Parent = PlayerGui
+Tela.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- CRIAR BOTÃO ESTILO CRISTAL
+local function CriarBotao(texto, cor, posicao, callback)
+    local Fundo = Instance.new("Frame")
+    Fundo.Size = UDim2.new(0, 220, 0, 85)
+    Fundo.Position = posicao
+    Fundo.BackgroundColor3 = CORES.FundoPreto
+    Fundo.Parent = Tela
+    Instance.new("UICorner", Fundo).CornerRadius = UDim.new(0, 16)
+    
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = CORES.AzulCristal
+    Borda.Thickness = 3
+    Borda.Parent = Fundo
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -6, 1, -6)
+    btn.Position = UDim2.new(0.5, 0, 0.5, 0)
+    btn.AnchorPoint = Vector2.new(0.5, 0.5)
+    btn.BackgroundColor3 = cor
+    btn.BackgroundTransparency = 0.2
+    btn.Text = texto
+    btn.TextColor3 = CORES.Branco
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 26
+    btn.AutoLocalize = false
+    btn.Parent = Fundo
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 14)
+    
+    btn.MouseButton1Click:Connect(callback)
+    btn.TouchTap:Connect(callback)
+    return btn
+end
+
+local temOvo = false
+
+-- 🥚 PEGAR OVO
+local BotaoPegar = CriarBotao(
+    "🥚 PEGAR OVO",
+    CORES.AzulCristal,
+    UDim2.new(0.025, 0, 0.70, 0),
+    function()
+        if temOvo then print("⚠️ Já tem o ovo! Clica TELEPORTE!") return end
+        local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if not Root then return end
+        
+        local ovoEncontrado = nil
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                local nome = string.lower(v.Name)
+                if nome == "ovo" or nome == "egg" or nome:find("ovo") or nome:find("egg") then
+                    local dist = (v.Position - Root.Position).Magnitude
+                    if dist < getgenv().Config.DistanciaPegarOvo then
+                        ovoEncontrado = v; break
+                    end
+                end
+            end
+        end
+        
+        if ovoEncontrado then
+            ovoEncontrado.Anchored = false
+            ovoEncontrado.CanCollide = false
+            ovoEncontrado.Parent = Root
+            ovoEncontrado.Position = Root.Position + Vector3.new(0, 2, -1)
+            temOvo = true
+            BotaoPegar.Text = "✅ OVO PEGO"
+            BotaoPegar.BackgroundColor3 = CORES.Sucesso
+            print("🥚 OVO PEGO! Agora clica em TELEPORTE!")
+        else
+            print("❌ Não achei o ovo! Chega mais perto!")
+        end
+    end
+)
+
+-- 🚀 TELEPORTE
+local BotaoTele = CriarBotao(
+    "🚀 TELEPORTE",
+    CORES.AzulCristal,
+    UDim2.new(0.025, 0, 0.84, 0),
+    function()
+        if not temOvo then print("⚠️ Primeiro clica em PEGAR OVO!") return end
+        local Root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        local Hum = Player.Character and Player.Character:FindFirstChild("Humanoid")
+        if not Root or not Hum then return end
+        
+        local PontoCima = getgenv().Config.PontoSeguro + Vector3.new(0, getgenv().Config.AlturaAcimaBicho, 0)
+        Root.CFrame = CFrame.new(PontoCima)
+        task.wait(0.15)
+        Root.CFrame = CFrame.new(getgenv().Config.PontoSeguro + Vector3.new(0, 2, 0))
+        
+        temOvo = false
+        BotaoPegar.Text = "🥚 PEGAR OVO"
+        BotaoPegar.BackgroundColor3 = CORES.AzulCristal
+        print("🏠 TELETRANSPORTADO COM O OVO! ✅")
+    end
+)
+
+-- ⚡ VELOCIDADE 400
+game:GetService("RunService").RenderStepped:Connect(function()
+    if not Player.Character then return end
+    local Hum = Player.Character:FindFirstChild("Humanoid")
+    if Hum then Hum.WalkSpeed = getgenv().Config.Velocidade end
+end)
+
+print("======================================")
+print("✅ SOUZA HUB — PRONTO! 💎")
+print("👉 Cores: Preto + Azul Cristal Brilhante")
+print("👉 Velocidade: 400 ⚡")
+print("👉 TECLA P = Salvar ponto seguro")
+print("======================================")
+
